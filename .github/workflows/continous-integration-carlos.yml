@@ -3,7 +3,7 @@ name: Continuous Integration Carlos
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
