@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,13 +17,22 @@ jobs:
         run: echo "Ejecución de pruebas de SAST"
 
       - name: Crear archivo credentials.ini
+        shell: bash
         run: |
           echo "[DEFAULT]" > credentials.ini
           echo "username=${{ secrets.USERNAME }}" >> credentials.ini
           echo "password=${{ secrets.PASSWORD }}" >> credentials.ini
+          chmod 600 credentials.ini
 
-      - name: Verificar archivo generado
-        run: cat credentials.ini
+      - name: Verificar archivo generado (sin exponer secretos)
+        shell: bash
+        run: |
+          test -f credentials.ini
+          test -s credentials.ini
+          grep -q "^\[DEFAULT\]$" credentials.ini
+          grep -q "^username=" credentials.ini
+          grep -q "^password=" credentials.ini
+          echo "credentials.ini creado correctamente"
 
       - name: Build docker image
         run: |
