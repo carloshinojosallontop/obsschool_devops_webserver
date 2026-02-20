@@ -1,0 +1,42 @@
+name: Pull Request Quality Gate
+
+on:
+  pull_request:
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Realizando análisis de SAST
+        run: echo "Realizando análisis de SAST"
+
+      - name: Comprobar requisitos (allow_pull_request.txt)
+        id: gate
+        shell: bash
+        run: |
+          if [ -f allow_pull_request.txt ]; then
+            echo "allow_pull=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "allow_pull=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Permitir Pull Request
+        if: steps.gate.outputs.allow_pull == 'true'
+        run: echo "Permitiendo Pull Request"
+
+      - name: Impedir Pull Request
+        if: steps.gate.outputs.allow_pull == 'false'
+        run: |
+          echo "Build fallida. Impidiendo Pull Request"
+          exit 1
+
+      - name: Subir allow_pull_request.txt como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: allow-pull-request-file
+          path: allow_pull_request.txt
+          if-no-files-found: ignore
